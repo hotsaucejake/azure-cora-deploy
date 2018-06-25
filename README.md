@@ -1,6 +1,6 @@
 # Azure Cora Deploment
 
->Note: This sample is for Managed Application in Service Catalog. For Marketplace, please see these instructions:
+>Note: This is for Managed Application in Service Catalog. For Marketplace:
 [**Marketplace Managed Application**](https://docs.microsoft.com/en-us/azure/managed-applications/publish-marketplace-app)
 
 ## Deploy this sample to your Service Catalog
@@ -9,7 +9,7 @@
 
 Clicking on the button below, will create the Managed Application definition to a Resource Group in your Azure subscription.
 
-[![Deploy to Azure](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure%2Fazure-managedapp-samples%2Fmaster%2Fsamples%2F201-managed-web-app%2Fazuredeploy.json)
+[![Deploy to Azure](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fhotsaucejake%2Fazure-cora-deploy%2Fmaster%2Fazuredeploy.json%3Ftoken%3DAGCgdeN42oT3JkUjR1Augk5nUCR_Cavuks5bOmIFwA%253D%253D)
 
 ### Deploy using PowerShell
 
