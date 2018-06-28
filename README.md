@@ -3,7 +3,7 @@
 >Note: This is for Managed Application in Service Catalog. For Marketplace:
 [**Marketplace Managed Application**](https://docs.microsoft.com/en-us/azure/managed-applications/publish-marketplace-app)
 
-## Deploy this sample to your Service Catalog
+## Deploy this to Service Catalog
 
 ### Deploy using Azure Portal
 
