@@ -6,7 +6,26 @@
             {}
         ],
         "steps": [
-            
+            {
+                "name": "myconfigname",
+                "label": "my label",
+                "subLabel": {
+                    "preValidation": "prevalidation",
+                    "postValidation": "postvalidation"
+                },
+                "bladeTitle": "bladetitle",
+                "elements": [
+                    {
+                        "name": "adminUsername",
+                        "type": "Microsoft.Common.TextBox",
+                        "label": "User name",
+                        "toolTip": "Admin username for the virtual machine",
+                        "constraints": {
+                            "required": true
+                        }
+                    }
+                ]
+            }
         ],
         "outputs": {
             
