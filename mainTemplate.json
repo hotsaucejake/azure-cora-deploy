@@ -2,172 +2,377 @@
     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
+        "botEnv": {
+            "defaultValue": "prod",
+            "type": "String"
+        },
+        "botId": {
+            "type": "String"
+        },
         "location": {
-            "type": "string",
-            "defaultValue": "[resourceGroup().location]",
-            "metadata": {
-                "description": "Specify the location for the Azure resources"
-            }
+            "type": "String"
         },
-        "vmSize": {
-            "type": "string",
-            "defaultValue": "Standard_D1_v2",
-            "metadata": {
-                "description": "Select the VM Size"
-            }
+        "sku": {
+            "type": "String"
         },
-        "vmNamePrefix": {
-            "type": "string",
-            "metadata": {
-                "description": "Assign a prefix for the VM name"
-            }
+        "kind": {
+            "type": "String"
         },
-        "userName": {
-            "type": "string",
-            "metadata": {
-                "description": "Specify the user name for the virtual machine guest OS"
-            }
+        "siteName": {
+            "type": "String"
         },
-        "pwd": {
-            "type": "securestring",
-            "metadata": {
-                "description": "Specify the password for the user account for the virtual machine"
-            }
+        "createNewStorage": {
+            "type": "Bool"
         },
-        "enablePremiumManagement": {
-            "type": "string",
-            "allowedValues": [
-                "Yes",
-                "No"
-            ],
-            "metadata": {
-                "description": "Select whether premium management should be enabled or not"
-            }
+        "storageAccountName": {
+            "type": "String"
         },
-        "dnsName": {
-            "type": "string",
-            "metadata": {
-                "description": "Specify the DNS name for the managed web app"
-            }
+        "storageAccountResourceId": {
+            "defaultValue": "",
+            "type": "String"
         },
-        "publicIPAddressName": {
-            "type": "string",
-            "metadata": {
-                "description": "Assign a name for the public IP address"
-            }
-        }        
+        "appId": {
+            "defaultValue": "1234",
+            "type": "String"
+        },
+        "appSecret": {
+            "defaultValue": "blank",
+            "type": "String"
+        },
+        "azureWebJobsBotFrameworkDirectLineSecret": {
+            "defaultValue": "",
+            "type": "String"
+        },
+        "zipUrl": {
+            "defaultValue": "",
+            "type": "String"
+        },
+        "proactiveZipUrl": {
+            "defaultValue": "",
+            "type": "String"
+        },
+        "useAppInsights": {
+            "type": "Bool"
+        },
+        "appInsightsLocation": {
+            "type": "String"
+        },
+        "serverFarmId": {
+            "type": "String"
+        },
+        "createServerFarm": {
+            "type": "Bool"
+        },
+        "serverFarmLocation": {
+            "defaultValue": "",
+            "type": "String"
+        },
+        "serverFarmSku": {
+            "defaultValue": {
+                "name": "S1",
+                "tier": "Standard",
+                "size": "S1",
+                "family": "S",
+                "capacity": 1
+            },
+            "type": "Object"
+        },
+        "endpoint": {
+            "defaultValue": "",
+            "type": "String"
+        },
+        "luisApiLocation": {
+            "defaultValue": "Global",
+            "type": "String"
+        }
     },
     "variables": {
-        "artifacts": {
-            "logAnalytics": "[uri(deployment().properties.templateLink.uri, 'nestedtemplates/oms.json')]",
-            "compute": "[uri(deployment().properties.templateLink.uri, 'nestedtemplates/managedVm.json')]",
-            "scripts": "[uri(deployment().properties.templateLink.uri, 'scripts/ManagedWebApplication.ps1.zip')]"
+        "storageAccountType": "Standard_LRS",
+        "storageAccountId": "[if(or(parameters('createNewStorage'), equals('', parameters('storageAccountResourceId'))), resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), parameters('storageAccountResourceId'))]",
+        "serverFarmName": "[last(split(parameters('serverFarmId'), '/'))]",
+        "myWorkerSize": 0,
+        "proactiveFunctionName": "[concat(parameters('siteName'), '-function')]",
+        "insightsName": "[concat(parameters('botId'), substring(uniqueString(resourceGroup().id), 0, 6))]",
+        "config": {
+            "scratch": {
+                "stateEndpoint": "https://intercom-api-scratch.azurewebsites.net",
+                "azureWebJobsBotFrameworkDirectLineEndpoint": "https://directline.scratch.botframework.com/",
+                "blobStoreName": "icscratch",
+                "openIdMetadata": "https://intercom-api-ppe.azurewebsites.net/v1/.well-known/openidconfiguration"
+            },
+            "ppe": {
+                "stateEndpoint": "https://intercom-api-ppe.azurewebsites.net",
+                "azureWebJobsBotFrameworkDirectLineEndpoint": "https://directline.ppe.botframework.com/",
+                "blobStoreName": "intercomppe",
+                "openIdMetadata": "https://intercom-api-ppe.azurewebsites.net/v1/.well-known/openidconfiguration"
+            },
+            "prod": {
+                "stateEndpoint": "",
+                "azureWebJobsBotFrameworkDirectLineEndpoint": "https://directline.botframework.com/",
+                "blobStoreName": "connectorprod",
+                "openIdMetadata": ""
+            }
         },
-        "logAnalyticsLocationMap": {
-            "eastasia": "southeastasia",
-            "southeastasia": "southeastasia",
-            "centralus": "westcentralus",
-            "eastus": "eastus",
-            "eastus2": "eastus",
-            "westus": "westcentralus",
-            "northcentralus": "westcentralus",
-            "southcentralus": "westcentralus",
-            "northeurope": "westeurope",
-            "westeurope": "westeurope",
-            "japanwest": "southeastasia",
-            "japaneast": "southeastasia",
-            "brazilsouth": "eastus",
-            "australiaeast": "australiasoutheast",
-            "australiasoutheast": "australiasoutheast",
-            "southindia": "southeastasia",
-            "centralindia": "southeastasia",
-            "westindia": "southeastasia",
-            "canadacentral": "eastus",
-            "canadaeast": "eastus",
-            "uksouth": "westeurope",
-            "ukwest": "westeurope",
-            "westcentralus": "westcentralus",
-            "westus2": "westcentralus",
-            "koreacentral": "southeastasia",
-            "koreasouth": "southeastasia",
-            "eastus2euap": "eastus"
+        "botAppKinds": {
+            "function": "functionapp",
+            "sdk": "app",
+            "designer": "app",
+            "bot": ""
         },
-        "logAnalyticsLocation": "[variables('logAnalyticsLocationMap')[parameters('location')]]",
-        "logAnalyticsWorkspaceName": "[concat(resourceGroup().name, '-', uniqueString('oms'))]"
+        "botAppKind": "[variables('botAppKinds')[parameters('kind')]]",
+        "currentConfig": "[variables('config')[toLower(parameters('botEnv'))]]",
+        "siteHost": "[concat(parameters('siteName'), '.azurewebsites.net')]",
+        "botEndpointConfig": {
+            "bot": "[parameters('endpoint')]",
+            "sdk": "[concat('https://', variables('siteHost'), '/api/messages')]",
+            "designer": "[concat('https://', variables('siteHost'), '/api/messages')]",
+            "function": "[concat('https://', variables('siteHost'), '/api/messages?code=', 'NYI')]"
+        },
+        "botEndpoint": "[variables('botEndpointConfig')[parameters('kind')]]",
+        "luisApiName": "",
+        "luisApiResId": "[resourceId('Microsoft.CognitiveServices/accounts/', variables('luisApiName'))]"
     },
     "resources": [
         {
-            "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2016-09-01",
-            "name": "logAnalytics",
-            "properties": {
-                "mode":"Incremental",
-                "templateLink": {
-                    "contentVersion": "1.0.0.0",
-                    "uri": "[variables('artifacts').logAnalytics]"
-                },
-                "parameters": {
-                    "omsWorkspaceName": {
-                        "value": "[variables('logAnalyticsWorkspaceName')]"
-                    },
-                    "omsWorkspaceRegion": {
-                        "value": "[variables('logAnalyticsLocation')]"
-                    },
-                    "enablePremiumManagement": {
-                        "value": "[parameters('enablePremiumManagement')]"
-                    }
-                }
-            }
+            "type": "Microsoft.CognitiveServices/accounts",
+            "sku": {
+                "name": "F0"
+            },
+            "kind": "LUIS",
+            "name": "[if(equals('', variables('luisApiName')), 'nosuch', variables('luisApiName'))]",
+            "apiVersion": "2017-04-18",
+            "location": "[parameters('luisApiLocation')]",
+            "properties": {},
+            "condition": "[not(equals(variables('luisApiName'), ''))]"
         },
         {
-            "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2016-09-01",
-            "name": "compute",
-            "dependsOn": [
-                "logAnalytics"
-            ],
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[parameters('storageAccountName')]",
+            "apiVersion": "2015-05-01-preview",
+            "location": "[parameters('location')]",
             "properties": {
-                "mode":"Incremental",
-                "templateLink": {
-                    "contentVersion": "1.0.0.0",
-                    "uri": "[variables('artifacts').compute]"
-                },
-                "parameters": {
-                    "location": {
-                        "value": "[parameters('location')]"
-                    },
-                    "vmSize": {
-                        "value": "[parameters('vmSize')]"
-                    },
-                    "vmNamePrefix": {
-                        "value": "[parameters('vmNamePrefix')]"
-                    },
-                    "userName": {
-                        "value": "[parameters('userName')]"
-                    },
-                    "pwd": {
-                        "value": "[parameters('pwd')]"
-                    },
-                    "dscScript": {
-                        "value": "[variables('artifacts').scripts]"
-                    },
-                    "logAnalyticsWorkspaceName": {
-                        "value": "[variables('logAnalyticsWorkspaceName')]"
-                    },
-                    "publicIPAddressName": {
-                        "value": "[parameters('publicIPAddressName')]"
-                    },
-                    "dnsName": {
-                        "value": "[parameters('dnsName')]"
+                "accountType": "[variables('storageAccountType')]"
+            },
+            "condition": "[parameters('createNewStorage')]"
+        },
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "sku": "[parameters('serverFarmSku')]",
+            "name": "[variables('serverFarmName')]",
+            "apiVersion": "2016-09-01",
+            "location": "[parameters('serverFarmLocation')]",
+            "properties": {
+                "name": "[variables('serverFarmName')]"
+            },
+            "condition": "[parameters('createServerFarm')]"
+        },
+        {
+            "type": "microsoft.insights/components",
+            "kind": "web",
+            "name": "[variables('insightsName')]",
+            "apiVersion": "2014-04-01",
+            "location": "[parameters('appInsightsLocation')]",
+            "tags": {
+                "[concat('hidden-link:', resourceId('Microsoft.BotService/botServices/', parameters('botId')))]": "Resource",
+                "[concat('hidden-link:', resourceId('Microsoft.Web/sites/', parameters('siteName')))]": "Resource"
+            },
+            "properties": {
+                "ApplicationId": "[parameters('botId')]"
+            },
+            "condition": "[parameters('useAppInsights')]"
+        },
+        {
+            "type": "Microsoft.Web/sites",
+            "kind": "[variables('botAppKind')]",
+            "name": "[parameters('siteName')]",
+            "apiVersion": "2015-08-01",
+            "location": "[parameters('location')]",
+            "properties": {
+                "name": "[parameters('siteName')]",
+                "serverFarmId": "[parameters('serverFarmId')]",
+                "siteConfig": {
+                    "appSettings": [
+                        {
+                            "name": "AzureWebJobsStorage",
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('storageAccountName'),';AccountKey=',listkeys(variables('storageAccountId'), '2015-05-01-preview').key1,';')]"
+                        },
+                        {
+                            "name": "AzureWebJobsDashboard",
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('storageAccountName'),';AccountKey=',listkeys(variables('storageAccountId'), '2015-05-01-preview').key1,';')]"
+                        },
+                        {
+                            "name": "WEBSITE_NODE_DEFAULT_VERSION",
+                            "value": "6.9.1"
+                        },
+                        {
+                            "name": "BotEnv",
+                            "value": "[parameters('botEnv')]"
+                        },
+                        {
+                            "name": "BotId",
+                            "value": "[parameters('botId')]"
+                        },
+                        {
+                            "name": "MicrosoftAppId",
+                            "value": "[parameters('appId')]"
+                        },
+                        {
+                            "name": "MicrosoftAppPassword",
+                            "value": "[parameters('appSecret')]"
+                        },
+                        {
+                            "name": "BotStateEndpoint",
+                            "value": "[variables('currentConfig').stateEndpoint]"
+                        },
+                        {
+                            "name": "BotOpenIdMetadata",
+                            "value": "[variables('currentConfig').openIdMetadata]"
+                        },
+                        {
+                            "name": "UseTableStorageForConversationState",
+                            "value": "true"
+                        },
+                        {
+                            "name": "BotDevAppInsightsKey",
+                            "value": "[reference(resourceId('microsoft.insights/components/', variables('insightsName')), '2015-05-01').InstrumentationKey]"
+                        },
+                        {
+                            "name": "BotDevAppInsightsName",
+                            "value": "[variables('insightsName')]"
+                        },
+                        {
+                            "name": "BotDevAppInsightsAppId",
+                            "value": "[reference(resourceId('microsoft.insights/components/', variables('insightsName')), '2015-05-01').AppId]"
+                        },
+                        {
+                            "name": "LuisAPIKey",
+                            "value": "410b683ba58e4692a3e0bc7e4190083b"
+                        },
+                        {
+                            "name": "LuisAppId",
+                            "value": "1ead6a11-218a-4f1e-9dfa-51506b54742e"
+                        },
+                        {
+                            "name": "LuisAPIHostName",
+                            "value": "westus.api.cognitive.microsoft.com"
+                        }
+                    ],
+                    "cors": {
+                        "allowedOrigins": [
+                            "https://botservice.hosting.portal.azure.net",
+                            "https://hosting.onecloud.azure-test.net/"
+                        ]
                     }
                 }
-            }
+            },
+            "resources": [
+                {
+                    "type": "Extensions",
+                    "name": "MSDeploy",
+                    "apiVersion": "2015-02-01",
+                    "properties": {
+                        "packageUri": "[parameters('zipUrl')]",
+                        "dbType": "None",
+                        "connectionString": "",
+                        "setParameters": {
+                            "IIS Web Application Name": "[parameters('siteName')]"
+                        }
+                    },
+                    "dependsOn": [
+                        "[concat('Microsoft.Web/Sites/', parameters('siteName'))]"
+                    ],
+                    "condition": "[not(equals(parameters('zipUrl'), ''))]"
+                }
+            ],
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/', parameters('storageAccountName'))]",
+                "[parameters('serverFarmId')]"
+            ],
+            "condition": "[not(equals(parameters('zipUrl'), ''))]"
+        },
+        {
+            "type": "Microsoft.Web/sites",
+            "kind": "functionapp",
+            "name": "[variables('proactiveFunctionName')]",
+            "apiVersion": "2016-03-01",
+            "location": "[parameters('location')]",
+            "properties": {
+                "siteConfig": {
+                    "appSettings": [
+                        {
+                            "name": "AzureWebJobsDashboard",
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('storageAccountName'),';AccountKey=',listkeys(variables('storageAccountId'), '2015-05-01-preview').key1,';')]"
+                        },
+                        {
+                            "name": "AzureWebJobsStorage",
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('storageAccountName'),';AccountKey=',listkeys(variables('storageAccountId'), '2015-05-01-preview').key1,';')]"
+                        },
+                        {
+                            "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('storageAccountName'),';AccountKey=',listkeys(variables('storageAccountId'), '2015-05-01-preview').key1,';')]"
+                        },
+                        {
+                            "name": "WEBSITE_CONTENTSHARE",
+                            "value": "[toLower(variables('proactiveFunctionName'))]"
+                        },
+                        {
+                            "name": "FUNCTIONS_EXTENSION_VERSION",
+                            "value": "~1"
+                        },
+                        {
+                            "name": "AzureWebJobsBotFrameworkDirectLineSecret",
+                            "value": "[parameters('azureWebJobsBotFrameworkDirectLineSecret')]"
+                        },
+                        {
+                            "name": "AzureWebJobsBotFrameworkDirectLineEndpoint",
+                            "value": "[variables('currentConfig').azureWebJobsBotFrameworkDirectLineEndpoint]"
+                        }
+                    ]
+                }
+            },
+            "resources": [
+                {
+                    "type": "Extensions",
+                    "name": "MSDeploy",
+                    "apiVersion": "2015-02-01",
+                    "properties": {
+                        "packageUri": "[parameters('proactiveZipUrl')]"
+                    },
+                    "dependsOn": [
+                        "[concat('Microsoft.Web/Sites/', variables('proactiveFunctionName'))]"
+                    ],
+                    "condition": "[not(equals(parameters('proactiveZipUrl'), ''))]"
+                }
+            ],
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/', parameters('storageAccountName'))]",
+                "[parameters('serverFarmId')]"
+            ],
+            "condition": "[not(equals(parameters('proactiveZipUrl'), ''))]"
+        },
+        {
+            "type": "Microsoft.BotService/botServices",
+            "sku": {
+                "name": "[parameters('sku')]"
+            },
+            "kind": "[parameters('kind')]",
+            "name": "[parameters('botId')]",
+            "apiVersion": "2017-12-01",
+            "location": "global",
+            "properties": {
+                "name": "[parameters('botId')]",
+                "displayName": "[parameters('botId')]",
+                "endpoint": "[variables('botEndpoint')]",
+                "msaAppId": "[parameters('appId')]",
+                "developerAppInsightsApplicationId": "[variables('insightsName')]",
+                "developerAppInsightKey": "[reference(resourceId('microsoft.insights/components/', variables('insightsName')), '2015-05-01').InstrumentationKey]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/', parameters('storageAccountName'))]",
+                "[parameters('serverFarmId')]",
+                "[resourceId('Microsoft.Web/sites/', parameters('siteName'))]",
+                "[resourceId('microsoft.insights/components/', variables('insightsName'))]"
+            ]
         }
-    ],
-    "outputs": {
-        "applicationEndpoint": {
-            "type": "string",
-            "value": "[reference('compute').outputs.vmEndpoint.value]"
-        }
-    }
+    ]
 }
