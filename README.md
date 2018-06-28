@@ -1,9 +1,9 @@
-# Azure Cora Deploment
+# Azure Cora Deployment
 
 >Note: This is for Managed Application in Service Catalog. For Marketplace:
 [**Marketplace Managed Application**](https://docs.microsoft.com/en-us/azure/managed-applications/publish-marketplace-app)
 
-## Deploy this to Service Catalog
+## Deploy to Service Catalog
 
 ### Deploy using Azure Portal
 
