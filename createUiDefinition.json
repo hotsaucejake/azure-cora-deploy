@@ -3,7 +3,16 @@
     "version": "0.1.2-preview",
     "parameters": {
         "basics": [
-            {}
+            {
+                "name": "botId",
+                "type": "Microsoft.Common.TextBox",
+                "label": "Some text box",
+                "defaultValue": "my value",
+                "toolTip": "Provide a descriptive name.",
+                "constraints": {},
+                "options": {},
+                "visible": true
+            }
         ],
         "steps": [
             {
