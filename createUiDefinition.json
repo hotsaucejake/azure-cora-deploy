@@ -22,7 +22,7 @@
 
         ],
         "outputs": {
-            
+            "botId": "[basics('botId)]"
         }
     }
 }
