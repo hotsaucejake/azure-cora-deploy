@@ -13,9 +13,11 @@
             "type": "String"
         },
         "sku": {
+            "defaultValue": "S1",
             "type": "String"
         },
         "kind": {
+            "defaultValue": "sdk",
             "type": "String"
         },
         "siteName": {
@@ -44,7 +46,7 @@
             "type": "String"
         },
         "zipUrl": {
-            "defaultValue": "",
+            "defaultValue": "https://connectorprod.blob.core.windows.net/bot-packages/csharp-abs-webapp_luisbot_precompiled.zip",
             "type": "String"
         },
         "proactiveZipUrl": {
@@ -52,19 +54,22 @@
             "type": "String"
         },
         "useAppInsights": {
+            "defaultValue": "true",
             "type": "Bool"
         },
         "appInsightsLocation": {
+            "defaultValue": "East US",
             "type": "String"
         },
         "serverFarmId": {
             "type": "String"
         },
         "createServerFarm": {
+            "defaultValue": "true",
             "type": "Bool"
         },
         "serverFarmLocation": {
-            "defaultValue": "",
+            "defaultValue": "eastus",
             "type": "String"
         },
         "serverFarmSku": {
