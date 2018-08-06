@@ -3,26 +3,12 @@
     "version": "0.1.2-preview",
     "parameters": {
         "basics": [
-            {
-                "name": "botId",
-                "type": "Microsoft.Common.TextBox",
-                "label": "Bot Name",
-                "defaultValue": "my value",
-                "toolTip": "Bot handle and name, can be changed later.",
-                "constraints": {
-                    "required": true,
-                    "regex": "^[a-z0-9A-Z-_]{4,26}$",
-                    "validationMessage": "Only alphanumeric characters are allowed: a-z, A-Z, 0-9, -, and _. The value must be 4-36 characters long."
-                },
-                "options": {},
-                "visible": true
-            }
         ],
         "steps": [
 
         ],
         "outputs": {
-            "botId": "[basics('botId)]"
+            
         }
     }
 }
