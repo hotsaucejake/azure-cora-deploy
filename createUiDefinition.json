@@ -8,7 +8,10 @@
 
         ],
         "outputs": {
-            
+            "siteName": "sitenametest225",
+            "administratorLogin": "sitenametest225",
+            "administratorLoginPassword": "SitenameTest225!",
+            "location": "[location()]"
         }
     }
 }
